@@ -3,15 +3,16 @@
   <head>
     <META charset="UTF-8" />
     <title>
-        {put your title here}
+        Guard-in garden
     </title>
     <script src="./js/secrets.js" type="text/javascript"></script>
 
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="/css/leaflet.css" />
+    <script src="/js/leaflet.js"></script>
 
     <script src="./js/mqttws31.js" type="text/javascript"></script>
     <script src="./js/mqtt.js" type="text/javascript"></script>
+
    
     <script src="./js/rover.js" type="text/javascript"></script>
     <script src="./js/joy.min.js" type="text/javascript"></script>
@@ -19,21 +20,46 @@
   </head>
 <body>
     <div id="joy"></div>
+   
+        <div id = "div-joy-details"></div>
     <div id='map'></div>
     <script>
         mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+
         const map = new mapboxgl.Map({
             container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/streets-v12', // style URL
-            center: [-74.5, 40], // starting position [lng, lat]
-            zoom: 9, // starting zoom
+            center: [LNG,LAT], // starting position [lng, lat]
+            zoom: 20,
+            profection : 'equirectangular',
+            style: 'mapbox://styles/mapbox/dark-v11'
         });
+        map.on('load', () => {
+            map.addSource('aerial', {
+            'type': 'image',
+            'url': '/assets/auckland-0075m-urban-aerial-photos-2015-2016.png',
+            'coordinates': [
+                [174.86143156916353, -36.849599896284545],
+                [174.86179695911358,-36.849599896284545],
+                [174.86179695911358, -36.850051610540504],
+                [174.86143156916353, -36.850051610540504]
+            ]
+            });
+            map.addLayer({
+            id: 'radar-layer',
+            'type': 'raster',
+            'source': 'aerial',
+            'paint': {
+            'raster-fade-duration': 0
+            }
+            });
+            });
+
+        const joyDetails = document.getElementById("div-joy-details");
 
         // Create JoyStick object into the DIV 'joy'
         const joy = new JoyStick('joy', {},function(stickData) {
             var dict = joystick_to_trackspeeds2(stickData.x,stickData.y);
             var json = JSON.stringify(dict)
-            console.log(json)
             message = new Paho.MQTT.Message(json);
             message.destinationName = TOPIC_CONTROL;
             client.send(message);

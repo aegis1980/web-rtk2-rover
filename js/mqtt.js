@@ -1,5 +1,5 @@
 
-const BROKER = new URL("http://127.0.0.1:8083");
+const BROKER = new URL("http://livingroom.local:8083");
 
 const TOPIC_STATUS = "status"
 const TOPIC_NMEA = "nmea"
@@ -21,7 +21,7 @@ function onConnect() {
   // Once a connection has been made, make a subscription and send a message.
   console.log("onConnect");
   client.subscribe(TOPIC_NMEA);
-  message = new Paho.MQTT.Message("Hello");
+  message = new Paho.MQTT.Message("connected");
   message.destinationName = TOPIC_STATUS;
   client.send(message);
 }
